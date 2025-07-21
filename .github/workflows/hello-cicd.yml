@@ -7,9 +7,28 @@ on:
         default: Hello
         required: true
         description: Write your parameter!
+      drop-down:
+        type: choice  # 입력 파라미터를 특정 값으로 제한하기
+        options:  # "특정 값" 목록
+          - info
+          - warn
+          - error
 jobs:  # 잡 정의
   hello:  # 잡 ID
+    name: job1
     runs-on: ubuntu-latest  # 실행 환경
+    env:  # 변수
+      NAME: horatio
     steps:  # 절차 정의
-      - run: echo "${{ inputs.greeting }}"  # 셀 명령 실행
-        # - uses: action/checkout@v4  # 액션 호출
+      - name: print parameter
+        run: echo "${{ inputs.greeting }}"  # 셀 명령 실행
+      - name: if fail
+        if: ${{failure()}}  # 위의 echo "fail"은 종료상태가 '실패' 일때에만 실행된다
+        run: echo "fail"
+        
+      - id: source
+        run: echo "<key>=<value>" >> "${GITHUB_OUTPUT}" # 스텝 끼리 변수 공유하는 법
+      - env:
+          RESULT: ${{ steps.source.outputs.result }}
+        run: echo "${RESULT}"
+        # - uses: action/checkout@v4  # 액션 호출 (checkout은 코드를 가져오는 액션)
